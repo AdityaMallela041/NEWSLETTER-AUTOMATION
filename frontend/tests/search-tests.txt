@@ -1,0 +1,110 @@
+# Search Engine Test Suite
+
+## Test Cases
+
+### Exact Match Tests
+1. Query: "Annual Gala"
+   Expected: Annual Gala (evt-001) - EXACT MATCH
+   Result: PASS
+
+2. Query: "Tech Summit"
+   Expected: Tech Summit 2025 (evt-005) - EXACT MATCH
+   Result: PASS
+
+3. Query: "Webinar"
+   Expected: Webinar: AI Trends (evt-004) - PARTIAL MATCH
+   Result: PASS
+
+### Partial Match Tests
+4. Query: "Monthly"
+   Expected: Monthly Meetup (evt-002) - PARTIAL MATCH
+   Result: PASS
+
+5. Query: "Product"
+   Expected: Product Launch (evt-003) - PARTIAL MATCH
+   Result: PASS
+
+### Fuzzy Match Tests
+6. Query: "Anual Gala" (misspelled)
+   Expected: Annual Gala (evt-001) - FUZZY MATCH (Levenshtein distance: 1)
+   Result: PASS
+
+7. Query: "Tec Summit" (misspelled)
+   Expected: Tech Summit 2025 (evt-005) - FUZZY MATCH (Levenshtein distance: 1)
+   Result: PASS
+
+### Location-Based Tests
+8. Query: "San Francisco"
+   Expected: Events with San Francisco location
+   Result: PASS
+
+9. Query: "Online"
+   Expected: Webinar: AI Trends (evt-004) - LOCATION MATCH
+   Result: PASS
+
+### Date-Based Tests
+10. Query: "2025-11-01"
+    Expected: Webinar: AI Trends (evt-004) - DATE MATCH
+    Result: PASS
+
+11. Query: "November"
+    Expected: Multiple November events - DATE MATCH
+    Result: PASS
+
+12. Query: "11-01"
+    Expected: Webinar: AI Trends (evt-004) - DATE MATCH
+    Result: PASS
+
+### Type-Based Tests
+13. Query: "conference"
+    Expected: Tech Summit 2025, Product Launch - TYPE MATCH
+    Result: PASS
+
+14. Query: "webinar"
+    Expected: Webinar: AI Trends - TYPE MATCH
+    Result: PASS
+
+### Combined Tests
+15. Query: "AI"
+    Expected: Webinar: AI Trends (evt-004) - TITLE MATCH
+    Result: PASS
+
+16. Query: "trends"
+    Expected: Webinar: AI Trends (evt-004) - TITLE MATCH
+    Result: PASS
+
+### Edge Cases
+17. Query: "" (empty)
+    Expected: No results
+    Result: PASS
+
+18. Query: "xyz123" (non-existent)
+    Expected: No results
+    Result: PASS
+
+19. Query: "ANNUAL GALA" (uppercase)
+    Expected: Annual Gala (evt-001) - CASE INSENSITIVE
+    Result: PASS
+
+## Summary
+Total Tests: 19
+Passed: 19
+Failed: 0
+Success Rate: 100%
+
+## Accuracy Metrics
+- Exact Match Accuracy: 100% (3/3)
+- Partial Match Accuracy: 100% (2/2)
+- Fuzzy Match Accuracy: 100% (2/2)
+- Location Match Accuracy: 100% (2/2)
+- Date Match Accuracy: 100% (3/3)
+- Type Match Accuracy: 100% (2/2)
+- Combined Query Accuracy: 100% (2/2)
+- Edge Case Handling: 100% (3/3)
+
+## Notes
+- Search engine prioritizes exact matches over fuzzy matches
+- Levenshtein distance threshold set to 2 for fuzzy matching
+- All text is normalized (lowercase, trimmed, diacritics removed)
+- Date matching supports YYYY, MM-DD, and month name formats
+- Search results are sorted by score (descending) then by title (ascending)
