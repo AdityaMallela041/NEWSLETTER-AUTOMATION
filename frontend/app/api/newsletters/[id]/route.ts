@@ -1,76 +1,134 @@
 import { NextResponse, type NextRequest } from "next/server"
 
-// Mock storage (in production, use a database)
-const newsletters = [
-  {
-    id: "n1",
-    eventName: "Tech Summit 2025",
-    description: "Annual technology conference featuring industry leaders",
-    place: "San Francisco, CA",
-    date: new Date().toISOString(),
-    time: "09:00",
-    contactEmail: "contact@techsummit.com",
-    tags: ["Technology", "Conference"],
-    image: "/tech-summit.jpg",
-    status: "published",
-  },
-  {
-    id: "n2",
-    eventName: "AI Workshop Series",
-    description: "Hands-on workshop on artificial intelligence and machine learning",
-    place: "New York, NY",
-    date: new Date(Date.now() + 86400000).toISOString(),
-    time: "14:00",
-    contactEmail: "workshops@ailearn.com",
-    tags: ["AI", "Workshop"],
-    image: "/ai-workshop.png",
-    status: "draft",
-  },
-  {
-    id: "n3",
-    eventName: "Business Networking Event",
-    description: "Connect with entrepreneurs and business leaders",
-    place: "Boston, MA",
-    date: new Date(Date.now() + 2 * 86400000).toISOString(),
-    time: "18:00",
-    contactEmail: "events@business.com",
-    tags: ["Business", "Networking"],
-    image: "/networking-event.png",
-    status: "published",
-  },
-]
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  const id = params.id
-  const index = newsletters.findIndex((n) => n.id === id)
-
-  if (index === -1) {
-    return NextResponse.json({ error: "Newsletter not found" }, { status: 404 })
-  }
-
-  newsletters.splice(index, 1)
-  return NextResponse.json({ success: true })
+function getAuthHeader(req: NextRequest): Record<string, string> {
+  const authCookie = req.cookies.get("auth_token")?.value
+  return authCookie ? { Authorization: `Bearer ${authCookie}` } : {}
 }
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  const id = params.id
-  const newsletter = newsletters.find((n) => n.id === id)
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      ...getAuthHeader(req),
+    }
 
-  if (!newsletter) {
-    return NextResponse.json({ error: "Newsletter not found" }, { status: 404 })
+    const response = await fetch(`${BACKEND_URL}/newsletters/${id}`, {
+      method: "GET",
+      headers: headers,
+    })
+
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: "Newsletter not found" },
+        { status: response.status }
+      )
+    }
+
+    const data = await response.json()
+
+    return NextResponse.json(
+      {
+        success: true,
+        data: data,
+      },
+      { status: 200 }
+    )
+  } catch (error) {
+    console.error("GET /api/newsletters/[id] error:", error)
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    )
   }
+}
 
-  // Simulate retriggering the newsletter
-  // In production, this would trigger an actual newsletter send or regeneration
-  const retriggeredNewsletter = {
-    ...newsletter,
-    updatedAt: new Date().toISOString(),
-    lastTriggeredAt: new Date().toISOString(),
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+    const body = await req.json()
+
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      ...getAuthHeader(req),
+    }
+
+    const response = await fetch(`${BACKEND_URL}/newsletters/${id}`, {
+      method: "PUT",
+      headers: headers,
+      body: JSON.stringify(body),
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      return NextResponse.json(
+        { error: error.detail || "Failed to update newsletter" },
+        { status: response.status }
+      )
+    }
+
+    const data = await response.json()
+
+    return NextResponse.json(
+      {
+        success: true,
+        data: data,
+      },
+      { status: 200 }
+    )
+  } catch (error) {
+    console.error("PUT /api/newsletters/[id] error:", error)
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    )
   }
+}
 
-  return NextResponse.json({
-    success: true,
-    message: `Newsletter "${newsletter.eventName}" has been retriggered successfully`,
-    newsletter: retriggeredNewsletter,
-  })
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      ...getAuthHeader(req),
+    }
+
+    const response = await fetch(`${BACKEND_URL}/newsletters/${id}`, {
+      method: "DELETE",
+      headers: headers,
+    })
+
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: "Failed to delete newsletter" },
+        { status: response.status }
+      )
+    }
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Newsletter deleted successfully",
+      },
+      { status: 200 }
+    )
+  } catch (error) {
+    console.error("DELETE /api/newsletters/[id] error:", error)
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    )
+  }
 }

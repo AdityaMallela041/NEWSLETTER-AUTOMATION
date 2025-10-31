@@ -14,14 +14,14 @@ export async function GET(req: NextRequest) {
       ...getAuthHeader(req),
     }
 
-    const response = await fetch(`${BACKEND_URL}/analytics/overview`, {
+    const response = await fetch(`${BACKEND_URL}/auth/me`, {
       method: "GET",
       headers: headers,
     })
 
     if (!response.ok) {
       return NextResponse.json(
-        { error: "Failed to fetch analytics overview" },
+        { error: "Failed to fetch user" },
         { status: response.status }
       )
     }
@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
       { status: 200 }
     )
   } catch (error) {
-    console.error("GET /api/analytics/overview error:", error)
+    console.error("GET /api/auth/me error:", error)
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
